@@ -172,7 +172,7 @@ select,input[type=text],input[type=tel],input[type=number],textarea{font-family:
 .modal-bg{position:fixed;inset:0;background:rgba(10,15,28,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
 .modal{background:var(--card);border-radius:16px;padding:22px;width:100%;max-width:440px;box-shadow:var(--shadow);max-height:85vh;overflow-y:auto}
 .modal h3{margin:0 0 14px}
-.field{margin-bottom:12px}
+.field {margin-bottom:12px}
 .field label{font-size:12px;font-weight:600;color:var(--text-dim);display:block;margin-bottom:5px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
@@ -200,7 +200,6 @@ select,input[type=text],input[type=tel],input[type=number],textarea{font-family:
 <body>
 <div class="app" id="app">
 
-<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="brand">
     <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M4 18l4-8 3 4 3-6 4 10"/><circle cx="19" cy="5" r="2"/></svg></div>
@@ -209,7 +208,6 @@ select,input[type=text],input[type=tel],input[type=number],textarea{font-family:
   <div id="navList"></div>
 </aside>
 
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:12px">
@@ -229,6 +227,120 @@ select,input[type=text],input[type=tel],input[type=number],textarea{font-family:
 </div>
 
 <div id="modalRoot"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    onSnapshot,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8qiTQcCkvxHZ99kNj6Bv051zC8qeAvX0",
+    authDomain: "runnaticos-triteam.firebaseapp.com",
+    projectId: "runnaticos-triteam",
+    storageBucket: "runnaticos-triteam.firebasestorage.app",
+    messagingSenderId: "18237625099",
+    appId: "1:18237625099:web:6b73d8f1da196a2e49880e"
+  };
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const db = getFirestore(firebaseApp);
+  const teamDocRef = doc(db, "triatlon", "equipo");
+
+  let saveTimer = null;
+  let unsubscribeTeam = null;
+
+  function normalizeState(data) {
+    const normalized = data && typeof data === "object" ? data : window.defaultState();
+
+    if (!normalized.theme) normalized.theme = "light";
+    if (!Array.isArray(normalized.members)) normalized.members = [];
+    if (!Array.isArray(normalized.inventory)) normalized.inventory = [];
+    if (!Array.isArray(normalized.volunteerTasks)) normalized.volunteerTasks = [];
+    if (!Array.isArray(normalized.schedule)) normalized.schedule = [];
+    if (!Array.isArray(normalized.checklist)) normalized.checklist = [];
+    if (!Array.isArray(normalized.chat)) normalized.chat = [];
+
+    normalized.members.forEach(member => {
+      if (member.competing === undefined) member.competing = true;
+      if (!Array.isArray(member.volunteering)) member.volunteering = [];
+    });
+
+    if (!normalized.dayModel) {
+      normalized.members.forEach(member => {
+        if (member.arrivalDate === "sat") member.arrivalDate = "sun";
+        else if (member.arrivalDate === "fri") member.arrivalDate = "sat";
+      });
+
+      normalized.schedule.forEach(item => {
+        if (item.day === "sat") item.day = "sun";
+        else if (item.day === "fri") item.day = "sat";
+      });
+
+      normalized.dayModel = "v2";
+    }
+
+    return normalized;
+  }
+
+  window.saveState = function saveState() {
+    clearTimeout(saveTimer);
+
+    saveTimer = setTimeout(async () => {
+      if (!window.state) return;
+
+      try {
+        await setDoc(teamDocRef, window.state);
+      } catch (error) {
+        console.error("No se pudo guardar el estado en Firestore:", error);
+      }
+    }, 250);
+  };
+
+  window.loadState = async function loadState() {
+    try {
+      const snapshot = await getDoc(teamDocRef);
+
+      if (snapshot.exists()) {
+        window.state = normalizeState(snapshot.data());
+      } else {
+        window.state = normalizeState(window.defaultState());
+        await setDoc(teamDocRef, window.state);
+      }
+    } catch (error) {
+      console.error("No se pudo cargar Firestore; se usarán datos iniciales:", error);
+      window.state = normalizeState(window.defaultState());
+    }
+
+    document.documentElement.setAttribute("data-theme", window.state.theme);
+    window.render();
+
+    if (unsubscribeTeam) unsubscribeTeam();
+
+    unsubscribeTeam = onSnapshot(
+      teamDocRef,
+      snapshot => {
+        if (!snapshot.exists()) return;
+
+        const remoteState = normalizeState(snapshot.data());
+        if (JSON.stringify(window.state) === JSON.stringify(remoteState)) return;
+
+        window.state = remoteState;
+        document.documentElement.setAttribute("data-theme", window.state.theme);
+        window.render();
+      },
+      error => {
+        console.error("Se perdió la conexión en tiempo real con Firestore:", error);
+      }
+    );
+  };
+
+  window.loadState();
+</script>
 
 <script>
 /* ---------- ICONS ---------- */
@@ -298,40 +410,9 @@ function defaultState(){
   };
 }
 
-let state = null;
+var state = null;
 let currentUser = 'Capitán';
 let activeTab = 'dash';
-
-/* ---------- PERSISTENCE ---------- */
-async function loadState(){
-  try{
-    const r = await window.storage.get('triathlon-state', true);
-    state = r ? JSON.parse(r.value) : defaultState();
-  }catch(e){ state = defaultState(); }
-  if(!state.theme) state.theme='light';
-  state.members.forEach(m=>{ if(m.competing===undefined) m.competing=true; });
-  if(!state.dayModel){
-    state.members.forEach(m=>{
-      if(m.arrivalDate==='sat') m.arrivalDate='sun';
-      else if(m.arrivalDate==='fri') m.arrivalDate='sat';
-    });
-    state.schedule.forEach(s=>{
-      if(s.day==='sat') s.day='sun';
-      else if(s.day==='fri') s.day='sat';
-    });
-    state.dayModel='v2';
-    saveState();
-  }
-  document.documentElement.setAttribute('data-theme', state.theme);
-  render();
-}
-let saveTimer=null;
-function saveState(){
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(async ()=>{
-    try{ await window.storage.set('triathlon-state', JSON.stringify(state), true); }catch(e){ console.error('save failed',e); }
-  }, 250);
-}
 
 /* ---------- NAV ---------- */
 const NAV = [
@@ -833,7 +914,7 @@ function renderAdmin(){
 function setRaceDate(v){ state.raceDate=v; saveState(); render(); }
 
 /* ---------- INIT ---------- */
-loadState();
+// El inicio de la app ahora es manejado de manera asíncrona dentro del script de Firebase adjunto arriba.
 setInterval(updateCountdown, 60000);
 </script>
 </body>
