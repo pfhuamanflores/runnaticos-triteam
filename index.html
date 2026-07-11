@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Runnaticos TriTeam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue-700:#1447E6; --blue-600:#1D4ED8; --blue-500:#3B82F6; --blue-100:#DBEAFE;
+  --orange-600:#EA580C; --orange-500:#F97316; --orange-100:#FFEDD5;
+  --run-600:#0F766E; --run-500:#14B8A6; --run-100:#CCFBF1;
+  --ink-900:#0B1220; --ink-800:#101A2E; --ink-700:#1B2740; --ink-500:#5B6B8C; --ink-300:#93A2C0;
+  --bg:#F5F7FB; --card:#FFFFFF; --border:#E4E9F2; --text:#0F172A; --text-dim:#5B6B8C;
+  --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.04), 0 8px 24px -12px rgba(15,23,42,.10);
+}
+[data-theme="dark"]{
+  --bg:#0A0F1C; --card:#111A2E; --border:#1F2C46; --text:#EAF0FF; --text-dim:#8CA0C9;
+  --blue-100:#16264A; --orange-100:#3A2413; --run-100:#0F2C29;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 30px -14px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;transition:background .3s,color .3s;}
+h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+
+/* Layout */
+.app{display:flex;min-height:100vh;}
+.sidebar{width:236px;flex-shrink:0;background:var(--card);border-right:1px solid var(--border);padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;transition:transform .3s;}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 10px 22px;}
+.brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue-600),var(--orange-500));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-mark svg{width:19px;height:19px}
+.brand-text{line-height:1.15}
+.brand-text .t1{font-weight:700;font-size:14.5px;font-family:'Space Grotesk',sans-serif}
+.brand-text .t2{font-size:11px;color:var(--text-dim)}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;cursor:pointer;color:var(--text-dim);font-size:13.5px;font-weight:500;margin-bottom:2px;transition:.15s;user-select:none;}
+.nav-item svg{width:17px;height:17px;flex-shrink:0}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--blue-100);color:var(--blue-700);font-weight:600}
+[data-theme="dark"] .nav-item.active{color:#8FB2FF}
+.nav-section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-300);margin:16px 10px 6px;font-weight:600}
+.nav-badge{margin-left:auto;font-size:10.5px;background:var(--orange-100);color:var(--orange-600);padding:1px 7px;border-radius:20px;font-weight:700}
+
+.main{flex:1;min-width:0;}
+.topbar{position:sticky;top:0;z-index:20;background:var(--bg);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.topbar h2{margin:0;font-size:19px;}
+.topbar .sub{font-size:12.5px;color:var(--text-dim);margin-top:2px}
+.countdown{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:7px 14px;box-shadow:var(--shadow)}
+.countdown .num{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:16px;color:var(--orange-600)}
+.countdown .lbl{font-size:11px;color:var(--text-dim)}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-dim);transition:.15s}
+.icon-btn:hover{color:var(--text);border-color:var(--blue-500)}
+.icon-btn svg{width:16px;height:16px}
+.content{padding:24px 28px 60px;max-width:1280px;}
+.hidden{display:none !important}
+
+/* Cards & grids */
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:1080px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.g4,.g3,.g2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+.stat-card{position:relative;overflow:hidden}
+.stat-card .top{display:flex;align-items:flex-start;justify-content:space-between}
+.stat-card .icon-wrap{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center}
+.stat-card .icon-wrap svg{width:16px;height:16px}
+.stat-val{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;margin-top:10px;line-height:1}
+.stat-lbl{font-size:12.5px;color:var(--text-dim);margin-top:5px}
+.blue-tint{background:var(--blue-100);color:var(--blue-700)}
+.orange-tint{background:var(--orange-100);color:var(--orange-600)}
+.run-tint{background:var(--run-100);color:var(--run-600)}
+
+/* Discipline strip — signature progress element (swim / bike / run) */
+.strip{display:flex;height:6px;border-radius:4px;overflow:hidden;background:var(--border);margin-top:12px;}
+.strip > div{height:100%;transition:width .5s ease}
+.strip .seg-blue{background:var(--blue-600)}
+.strip .seg-orange{background:var(--orange-500)}
+.strip .seg-run{background:var(--run-500)}
+.strip-legend{display:flex;gap:12px;margin-top:6px;font-size:10.5px;color:var(--text-dim)}
+.strip-legend span{display:flex;align-items:center;gap:4px}
+.strip-legend i{width:7px;height:7px;border-radius:2px;display:inline-block}
+
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:28px 0 12px;}
+.section-title h3{margin:0;font-size:15px;}
+.section-title .hint{font-size:12px;color:var(--text-dim)}
+
+/* Alerts */
+.alert{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:10px;font-size:13px;border:1px solid;margin-bottom:8px;}
+.alert svg{width:15px;height:15px;flex-shrink:0;margin-top:1px}
+.alert-warn{background:var(--orange-100);border-color:#FDBA74;color:var(--orange-600)}
+.alert-ok{background:var(--run-100);border-color:#5EEAD4;color:var(--run-600)}
+[data-theme="dark"] .alert-warn{color:#FDBA74}
+[data-theme="dark"] .alert-ok{color:#5EEAD4}
+
+/* Buttons */
+.btn{border:none;border-radius:10px;padding:9px 15px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.15s;font-family:'Inter',sans-serif;}
+.btn-primary{background:var(--blue-600);color:#fff}
+.btn-primary:hover{background:var(--blue-700)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--blue-500)}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:8px}
+.btn svg{width:14px;height:14px}
+
+/* Table */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:820px}
+th{text-align:left;padding:11px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-dim);border-bottom:1px solid var(--border);font-weight:600;white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.name-cell{display:flex;align-items:center;gap:9px;font-weight:600}
+select,input[type=text],input[type=tel],input[type=number],textarea{font-family:'Inter',sans-serif;font-size:12.5px;padding:6px 9px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);width:100%}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.pill-green{background:var(--run-100);color:var(--run-600)}
+.pill-amber{background:var(--orange-100);color:var(--orange-600)}
+.pill-red{background:#FEE2E2;color:#DC2626}
+[data-theme="dark"] .pill-red{background:#3A1414;color:#FCA5A5}
+.filters{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.filters select{width:auto;min-width:140px}
+
+/* Inventory */
+.inv-item{display:grid;grid-template-columns:1fr 90px 90px 1fr 90px 28px;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--border);font-size:13px}
+.inv-item:last-child{border-bottom:none}
+.inv-name{font-weight:600}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dot-green{background:#10B981}.dot-amber{background:#F59E0B}.dot-red{background:#EF4444}
+.inv-head{font-size:10.5px;text-transform:uppercase;color:var(--text-dim);font-weight:600;padding:0 4px 8px;border-bottom:1px solid var(--border);margin-bottom:2px}
+
+/* Volunteers */
+.vol-task{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;background:var(--card)}
+.vol-task .cnt{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px}
+
+/* Timeline */
+.tl-day{margin-bottom:22px}
+.tl-day h4{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);margin:0 0 10px}
+.tl-row{display:flex;gap:14px;padding:10px 0;border-left:2px solid var(--border);padding-left:16px;margin-left:6px;position:relative}
+.tl-row::before{content:'';position:absolute;left:-6px;top:15px;width:10px;height:10px;border-radius:50%;background:var(--blue-600);border:2px solid var(--card)}
+.tl-time{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);min-width:52px}
+.tl-label{font-weight:600;font-size:13.5px}
+
+/* Checklist */
+.chk-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border);font-size:13.5px}
+.chk-row:last-child{border-bottom:none}
+.chk-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--blue-600);cursor:pointer}
+.chk-row.done .txt{text-decoration:line-through;color:var(--text-dim)}
+.progress-bar{height:9px;border-radius:6px;background:var(--border);overflow:hidden;margin-top:10px}
+.progress-bar > div{height:100%;background:linear-gradient(90deg,var(--blue-600),var(--run-500));border-radius:6px;transition:width .4s}
+
+/* Chat */
+.chat-box{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding:4px}
+.msg{display:flex;gap:9px;max-width:78%}
+.msg .avatar{margin-top:2px}
+.msg .bubble{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px 12px;font-size:13px}
+.msg .who{font-size:11px;font-weight:700;margin-bottom:2px;color:var(--text-dim)}
+.msg .time{font-size:10px;color:var(--text-dim);margin-top:3px}
+.chat-input{display:flex;gap:8px;margin-top:12px}
+
+/* Calendar */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-cell{min-height:78px;border:1px solid var(--border);border-radius:9px;padding:6px;font-size:11px;background:var(--bg)}
+.cal-cell .d{font-weight:700;font-size:11.5px;margin-bottom:4px}
+.cal-cell.active{background:var(--blue-100)}
+.cal-evt{background:var(--card);border-left:3px solid var(--orange-500);border-radius:4px;padding:2px 5px;margin-bottom:3px;font-size:10px;font-weight:600}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(10,15,28,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal{background:var(--card);border-radius:16px;padding:22px;width:100%;max-width:440px;box-shadow:var(--shadow);max-height:85vh;overflow-y:auto}
+.modal h3{margin:0 0 14px}
+.field{margin-bottom:12px}
+.field label{font-size:12px;font-weight:600;color:var(--text-dim);display:block;margin-bottom:5px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.switch{position:relative;width:38px;height:22px;background:var(--border);border-radius:20px;cursor:pointer;transition:.2s}
+.switch.on{background:var(--blue-600)}
+.switch .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s}
+.switch.on .knob{left:18px}
+
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:12px;border:1px solid var(--border);cursor:pointer;background:var(--card)}
+.chip.on{background:var(--blue-600);color:#fff;border-color:var(--blue-600)}
+
+.empty-hint{text-align:center;color:var(--text-dim);font-size:12.5px;padding:20px}
+.mobile-toggle{display:none}
+@media(max-width:900px){
+  .sidebar{position:fixed;left:0;transform:translateX(-100%);z-index:50;box-shadow:0 0 0 100vmax rgba(0,0,0,0);}
+  .sidebar.open{transform:translateX(0);box-shadow:0 0 40px rgba(0,0,0,.3)}
+  .mobile-toggle{display:flex}
+  .content{padding:18px 16px 60px}
+  .topbar{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M4 18l4-8 3 4 3-6 4 10"/><circle cx="19" cy="5" r="2"/></svg></div>
+    <div class="brand-text"><div class="t1">Runnaticos TriTeam</div><div class="t2">Runnatricos</div></div>
+  </div>
+  <div id="navList"></div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="icon-btn mobile-toggle" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
+      <div>
+        <h2 id="pageTitle">Dashboard</h2>
+        <div class="sub" id="pageSub">Vista general de la competencia</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="countdown"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><div><div class="num" id="cdNum">–</div></div><div class="lbl">para la salida</div></div>
+      <div class="icon-btn" onclick="toggleTheme()" id="themeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></div>
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+/* ---------- ICONS ---------- */
+const ICONS = {
+  dash:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>`,
+  members:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="8.5" r="2.6"/><path d="M15.5 14.3c2.6.4 4.5 2.4 4.5 5.2"/></svg>`,
+  bike:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="17" r="3.5"/><circle cx="18" cy="17" r="3.5"/><path d="M6 17l4-8h4l3 8M10 9L8 6h3M9.5 9h5.5l2 4"/></svg>`,
+  inv:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l1.5-3h13L20 7"/><rect x="4" y="7" width="16" height="13" rx="1.5"/><path d="M9 11h6"/></svg>`,
+  vol:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.5-9C.9 8.4 2.6 5 6 5c2 0 3.3 1.1 4 2.2C10.7 6.1 12 5 14 5c3.4 0 5.1 3.4 3.5 7-2.5 4.6-5.5 9-5.5 9z"/></svg>`,
+  sched:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg>`,
+  chk:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l2.5 2.5L16 9"/></svg>`,
+  chat:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 1 1-3.2-6.4L21 4l-1 4.4"/></svg>`,
+  cal:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
+  admin:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 5-3.5 8-7 11-3.5-3-7-6-7-11V5z"/></svg>`,
+  alert:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.6L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
+  plus:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  trash:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>`,
+  edit:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>`,
+  send:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>`,
+};
+
+/* ---------- STATE ---------- */
+const AVATAR_COLORS=['#1D4ED8','#F97316','#0F766E','#7C3AED','#DB2777','#0891B2','#CA8A04'];
+function initials(n){return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+function colorFor(id){let h=0;for(const c of id)h=c.charCodeAt(0)+((h<<5)-h);return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length];}
+function uid(){return Math.random().toString(36).slice(2,9);}
+
+const DEFAULT_TASKS=['Armar el stand','Desarmar el stand','Recibir a los participantes','Ayudar en transición','Comprar hielo','Comprar agua','Recoger basura','Apoyo logístico'];
+const DEFAULT_INV=[
+ ['Agua',20],['Geles',30],['Electrolitos',10],['Bebidas isotónicas',15],['Coolers',3],['Hielo',6],
+ ['Bomba de aire',2],['Herramientas',1],['Inflador',2],['Parche para bicicleta',4],['Cámara de repuesto',3],
+ ['Lubricante',1],['Mesa',2],['Sillas',6],['Carpa',1],['Extensión eléctrica',2],['Cinta adhesiva',2],
+ ['Botiquín',1],['Protector solar',3],['Toallas',6]
+];
+const DEFAULT_CHECKLIST=['Confirmar asistentes','Conseguir agua','Comprar hielo','Confirmar transporte de bicicletas','Carpa','Herramientas','Confirmar hospedaje','Imprimir credenciales'];
+
+function defaultState(){
+  return {
+    raceDate: '2026-07-19',
+    theme:'light',
+    dayModel:'v2',
+    members:[
+      {id:uid(),name:'Carlos Reyes',city:'Lima',phone:'987654321',status:'confirmed',competing:true,arrivalDate:'sat',arrivalTime:'17:00',transport:'Auto propio',notes:'',bikeTakes:true,bikeExtra:2,bikeFrom:'Lima',bikeTime:'09:00',volunteering:['Armar el stand','Comprar hielo']},
+      {id:uid(),name:'María Torres',city:'Arequipa',phone:'956123456',status:'confirmed',competing:true,arrivalDate:'sun',arrivalTime:'07:30',transport:'Bus interprovincial',notes:'Llega justo antes de la reunión',bikeTakes:true,bikeExtra:1,bikeFrom:'Arequipa',bikeTime:'23:00',volunteering:['Recibir a los participantes']},
+      {id:uid(),name:'Diego Salas',city:'Tacna',phone:'944112233',status:'pending',competing:true,arrivalDate:'',arrivalTime:'',transport:'',notes:'',bikeTakes:false,bikeExtra:0,bikeFrom:'',bikeTime:'',volunteering:[]},
+      {id:uid(),name:'Ana Quispe',city:'Lima',phone:'977889900',status:'confirmed',competing:false,arrivalDate:'fri',arrivalTime:'18:00',transport:'Auto propio',notes:'Va de apoyo, no compite — recoge kits el viernes',bikeTakes:false,bikeExtra:0,bikeFrom:'',bikeTime:'',volunteering:['Desarmar el stand','Apoyo logístico']},
+      {id:uid(),name:'Jorge Paredes',city:'Moquegua',phone:'933221144',status:'declined',competing:true,arrivalDate:'',arrivalTime:'',transport:'',notes:'No podrá asistir por trabajo',bikeTakes:false,bikeExtra:0,bikeFrom:'',bikeTime:'',volunteering:[]},
+    ],
+    inventory: DEFAULT_INV.map(([name,needed])=>({id:uid(),name,needed,covered: Math.random()>0.5?needed: Math.floor(needed*Math.random()),coveredBy:'',custom:false})),
+    volunteerTasks: DEFAULT_TASKS.map(t=>({id:uid(),name:t})),
+    schedule:[
+      {id:uid(),day:'fri',time:'18:00',label:'Entrega de kits'},
+      {id:uid(),day:'sat',time:'17:00',label:'Llegada de participantes'},
+      {id:uid(),day:'sat',time:'19:00',label:'Armado del stand'},
+      {id:uid(),day:'sun',time:'06:00',label:'Reunión del equipo'},
+      {id:uid(),day:'sun',time:'07:30',label:'Competencia'},
+      {id:uid(),day:'sun',time:'13:00',label:'Premiación'},
+      {id:uid(),day:'sun',time:'14:30',label:'Desmontaje'},
+    ],
+    checklist: DEFAULT_CHECKLIST.map((t,i)=>({id:uid(),text:t,done:i<2})),
+    chat:[
+      {id:uid(),author:'Carlos Reyes',text:'Llego el sábado a las 5 pm.',time:'Ayer 10:20'},
+      {id:uid(),author:'Ana Quispe',text:'Yo llevo un cooler.',time:'Ayer 11:05'},
+      {id:uid(),author:'María Torres',text:'Me sobra espacio para otra bicicleta.',time:'Hoy 08:40'},
+    ],
+  };
+}
+
+let state = null;
+let currentUser = 'Capitán';
+let activeTab = 'dash';
+
+/* ---------- PERSISTENCE ---------- */
+async function loadState(){
+  try{
+    const r = await window.storage.get('triathlon-state', true);
+    state = r ? JSON.parse(r.value) : defaultState();
+  }catch(e){ state = defaultState(); }
+  if(!state.theme) state.theme='light';
+  state.members.forEach(m=>{ if(m.competing===undefined) m.competing=true; });
+  if(!state.dayModel){
+    state.members.forEach(m=>{
+      if(m.arrivalDate==='sat') m.arrivalDate='sun';
+      else if(m.arrivalDate==='fri') m.arrivalDate='sat';
+    });
+    state.schedule.forEach(s=>{
+      if(s.day==='sat') s.day='sun';
+      else if(s.day==='fri') s.day='sat';
+    });
+    state.dayModel='v2';
+    saveState();
+  }
+  document.documentElement.setAttribute('data-theme', state.theme);
+  render();
+}
+let saveTimer=null;
+function saveState(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async ()=>{
+    try{ await window.storage.set('triathlon-state', JSON.stringify(state), true); }catch(e){ console.error('save failed',e); }
+  }, 250);
+}
+
+/* ---------- NAV ---------- */
+const NAV = [
+  {id:'dash',label:'Dashboard',icon:'dash'},
+  {id:'members',label:'Integrantes',icon:'members'},
+  {id:'bike',label:'Transporte de bicis',icon:'bike'},
+  {id:'inv',label:'Inventario',icon:'inv'},
+  {id:'vol',label:'Voluntarios',icon:'vol'},
+  {id:'sched',label:'Cronograma',icon:'sched'},
+  {id:'chk',label:'Checklist',icon:'chk'},
+  {id:'chat',label:'Comentarios',icon:'chat'},
+  {id:'cal',label:'Calendario',icon:'cal'},
+  {id:'admin',label:'Panel del capitán',icon:'admin'},
+];
+function renderNav(){
+  const el=document.getElementById('navList');
+  el.innerHTML = NAV.map(n=>`<div class="nav-item ${activeTab===n.id?'active':''}" onclick="setTab('${n.id}')">${ICONS[n.icon]}<span>${n.label}</span></div>`).join('');
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
+function setTab(id){activeTab=id;document.getElementById('sidebar').classList.remove('open');render();}
+
+function toggleTheme(){
+  state.theme = state.theme==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme', state.theme);
+  saveState();
+}
+
+/* ---------- DERIVED DATA ---------- */
+function counts(){
+  const m=state.members;
+  const confirmed=m.filter(x=>x.status==='confirmed').length;
+  const pending=m.filter(x=>x.status==='pending').length;
+  const declined=m.filter(x=>x.status==='declined').length;
+  const bikeCapacity = m.filter(x=>x.bikeTakes).reduce((a,x)=>a+(parseInt(x.bikeExtra)||0),0);
+  const bikesNoTransport = Math.max(0, m.filter(x=>x.status!=='confirmed').length - bikeCapacity); // heuristic used only for alert text, real calc below
+  const invMissing = state.inventory.filter(i=>i.covered < i.needed);
+  const invCovered = state.inventory.filter(i=>i.covered >= i.needed);
+  const fri = m.filter(x=>x.status==='confirmed' && x.arrivalDate==='fri').length;
+  const sat = m.filter(x=>x.status==='confirmed' && x.arrivalDate==='sat').length;
+  const sun = m.filter(x=>x.status==='confirmed' && x.arrivalDate==='sun').length;
+  const setup = new Set(m.filter(x=>x.volunteering.includes('Armar el stand')).map(x=>x.id)).size;
+  const teardown = new Set(m.filter(x=>x.volunteering.includes('Desarmar el stand')).map(x=>x.id)).size;
+  return {confirmed,pending,declined,total:m.length,bikeCapacity,invMissing,invCovered,fri,sat,sun,setup,teardown};
+}
+function disciplineWidths(pct){
+  // splits a 0-100 pct into three roughly-equal segments filled proportionally (signature visual)
+  const seg = 100/3;
+  const segs=[0,0,0];
+  let remaining = pct;
+  for(let i=0;i<3;i++){ segs[i]=Math.max(0,Math.min(seg,remaining)); remaining-=seg; }
+  return segs.map(s=>(s/seg*100).toFixed(0));
+}
+
+/* ---------- RENDER ROOT ---------- */
+function render(){
+  renderNav();
+  const titles={dash:['Dashboard','Vista general de la competencia'],members:['Integrantes','Quién asiste, cuándo llega y cómo viaja'],
+    bike:['Transporte de bicicletas','Coordina capacidad disponible entre ciudades'],inv:['Inventario colaborativo','Qué falta llevar y quién lo cubre'],
+    vol:['Voluntarios','Disponibilidad por tarea antes y después del evento'],sched:['Cronograma','Línea de tiempo del viernes al domingo'],
+    chk:['Checklist general','Tareas pendientes del equipo'],chat:['Comentarios','Mensajes rápidos del equipo'],
+    cal:['Calendario','Vista semanal de llegadas y actividades'],admin:['Panel del capitán','Edición y alertas del equipo']};
+  document.getElementById('pageTitle').textContent=titles[activeTab][0];
+  document.getElementById('pageSub').textContent=titles[activeTab][1];
+  updateCountdown();
+  const c=document.getElementById('content');
+  const renderers={dash:renderDash,members:renderMembers,bike:renderBike,inv:renderInv,vol:renderVol,sched:renderSched,chk:renderChk,chat:renderChat,cal:renderCal,admin:renderAdmin};
+  c.innerHTML = renderers[activeTab]();
+  if(activeTab==='chat'){ const box=document.getElementById('chatBox'); if(box) box.scrollTop=box.scrollHeight; }
+}
+function updateCountdown(){
+  const d = new Date(state.raceDate);
+  const diff = Math.max(0, d - new Date());
+  const days = Math.floor(diff/86400000);
+  const hours = Math.floor((diff%86400000)/3600000);
+  document.getElementById('cdNum').textContent = days+'d '+hours+'h';
+}
+
+/* ---------- ALERTS (smart detection) ---------- */
+function computeAlerts(){
+  const alerts=[];
+  const m=state.members;
+  const bikeCapacity = m.filter(x=>x.bikeTakes).reduce((a,x)=>a+(parseInt(x.bikeExtra)||0),0);
+  const missing = state.inventory.filter(i=>i.covered < i.needed);
+  const pending = m.filter(x=>x.status==='pending');
+  const setupVols = m.filter(x=>x.volunteering.includes('Armar el stand') && x.status==='confirmed');
+  const friArrivals = m.filter(x=>x.status==='confirmed' && x.arrivalDate==='fri');
+
+  missing.forEach(i=>{
+    const gap = i.needed - i.covered;
+    alerts.push({type:'warn', text:`Faltan ${gap} ${i.name.toLowerCase()}${gap>1?'s':''} por cubrir.`});
+  });
+  if(pending.length>0) alerts.push({type:'warn', text:`${pending.length} persona${pending.length>1?'s':''} aún no ha${pending.length>1?'n':''} respondido.`});
+  state.volunteerTasks.forEach(t=>{
+    const n = m.filter(x=>x.volunteering.includes(t.name) && x.status==='confirmed').length;
+    if(n===0) alerts.push({type:'warn', text:`Nadie se ha ofrecido para "${t.name}".`});
+  });
+  if(setupVols.length<=1) alerts.push({type:'warn', text:`Solo ${setupVols.length} persona${setupVols.length===1?'':'s'} llega${setupVols.length===1?'':'n'} el sábado para armar el stand.`});
+  if(alerts.length===0) alerts.push({type:'ok', text:'Todo está cubierto. No hay riesgos logísticos detectados.'});
+  return alerts;
+}
+function alertsHTML(limit){
+  let a = computeAlerts();
+  if(limit) a=a.slice(0,limit);
+  return a.map(x=>`<div class="alert ${x.type==='warn'?'alert-warn':'alert-ok'}">${ICONS[x.type==='warn'?'alert':'check']}<span>${x.text}</span></div>`).join('');
+}
+
+/* ---------- DASHBOARD ---------- */
+function renderDash(){
+  const c = counts();
+  const invPct = state.inventory.length? Math.round(state.inventory.filter(i=>i.covered>=i.needed).length/state.inventory.length*100):0;
+  const chkDone = state.checklist.filter(x=>x.done).length;
+  const chkPct = state.checklist.length? Math.round(chkDone/state.checklist.length*100):0;
+  const confirmPct = c.total? Math.round(c.confirmed/c.total*100):0;
+  const bikesNeeded = state.members.filter(x=>x.status!=='declined').length - state.members.filter(x=>x.bikeTakes).length;
+  const bikesNoTransport = Math.max(0, bikesNeeded - c.bikeCapacity);
+
+  function stat(label,val,tint,icon,pct){
+    const segs = disciplineWidths(pct);
+    return `<div class="card stat-card">
+      <div class="top"><div class="icon-wrap ${tint}">${ICONS[icon]}</div></div>
+      <div class="stat-val mono">${val}</div>
+      <div class="stat-lbl">${label}</div>
+      <div class="strip"><div class="seg-blue" style="width:${segs[0]}%"></div><div class="seg-orange" style="width:${segs[1]}%"></div><div class="seg-run" style="width:${segs[2]}%"></div></div>
+    </div>`;
+  }
+  return `
+  <div class="grid g4">
+    ${stat('Total de integrantes', c.total, 'blue-tint','members', 100)}
+    ${stat('Confirmados', c.confirmed, 'run-tint','check', confirmPct)}
+    ${stat('Pendientes', c.pending, 'orange-tint','alert', c.total? Math.round(c.pending/c.total*100):0)}
+    ${stat('No asistirán', c.declined, 'orange-tint','members', c.total? Math.round(c.declined/c.total*100):0)}
+    ${stat('Bicicletas confirmadas', state.members.filter(x=>x.bikeTakes).length,'blue-tint','bike', 100)}
+    ${stat('Cap. bicis adicionales', c.bikeCapacity, 'run-tint','bike', 100)}
+    ${stat('Bicis sin transporte', bikesNoTransport, bikesNoTransport>0?'orange-tint':'run-tint','bike', bikesNoTransport>0?70:10)}
+    ${stat('Implementos cubiertos', c.invCovered.length+'/'+state.inventory.length,'run-tint','inv', invPct)}
+    ${stat('Implementos faltantes', c.invMissing.length,'orange-tint','inv', c.total?Math.round(c.invMissing.length/state.inventory.length*100):0)}
+    ${stat('Llegan el viernes', c.fri, 'blue-tint','sched', 100)}
+    ${stat('Llegan el sábado', c.sat, 'blue-tint','sched', 100)}
+    ${stat('Llegan el domingo', c.sun, 'blue-tint','sched', 100)}
+    ${stat('Voluntarios armado', c.setup, 'run-tint','vol', 100)}
+  </div>
+
+  <div class="section-title"><h3>Progreso general</h3><span class="hint mono">${chkPct}% checklist · ${invPct}% inventario</span></div>
+  <div class="grid g2">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Checklist del equipo</span><span class="mono">${chkDone}/${state.checklist.length}</span></div>
+      <div class="progress-bar"><div style="width:${chkPct}%"></div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Inventario cubierto</span><span class="mono">${c.invCovered.length}/${state.inventory.length}</span></div>
+      <div class="progress-bar"><div style="width:${invPct}%"></div></div>
+    </div>
+  </div>
+
+  <div class="section-title"><h3>Alertas</h3><span class="hint">Detección automática de riesgos</span></div>
+  ${alertsHTML(6)}
+  `;
+}
+
+/* ---------- MEMBERS ---------- */
+let memberFilters={city:'',status:'',day:'',role:''};
+function renderMembers(){
+  const cities=[...new Set(state.members.map(m=>m.city))];
+  let list = state.members.filter(m=>
+    (!memberFilters.city || m.city===memberFilters.city) &&
+    (!memberFilters.status || m.status===memberFilters.status) &&
+    (!memberFilters.day || m.arrivalDate===memberFilters.day) &&
+    (!memberFilters.role || (memberFilters.role==='competing'?m.competing:!m.competing)));
+  const statusPill=s=>({confirmed:'<span class="pill pill-green">Confirmado</span>',pending:'<span class="pill pill-amber">Pendiente</span>',declined:'<span class="pill pill-red">No asiste</span>'}[s]);
+  const rolePill=m=>m.competing?'<span class="pill pill-green">Compite</span>':'<span class="pill pill-amber">Apoyo</span>';
+  const dayLabel=d=>d==='fri'?'Viernes':d==='sat'?'Sábado':d==='sun'?'Domingo':'—';
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+    <div class="filters">
+      <select onchange="memberFilters.city=this.value;render()"><option value="">Todas las ciudades</option>${cities.map(c=>`<option ${memberFilters.city===c?'selected':''}>${c}</option>`).join('')}</select>
+      <select onchange="memberFilters.status=this.value;render()">
+        <option value="">Todos los estados</option>
+        <option value="confirmed" ${memberFilters.status==='confirmed'?'selected':''}>Confirmado</option>
+        <option value="pending" ${memberFilters.status==='pending'?'selected':''}>Pendiente</option>
+        <option value="declined" ${memberFilters.status==='declined'?'selected':''}>No asiste</option>
+      </select>
+      <select onchange="memberFilters.day=this.value;render()">
+        <option value="">Cualquier día</option>
+        <option value="fri" ${memberFilters.day==='fri'?'selected':''}>Viernes</option>
+        <option value="sat" ${memberFilters.day==='sat'?'selected':''}>Sábado</option>
+        <option value="sun" ${memberFilters.day==='sun'?'selected':''}>Domingo</option>
+      </select>
+      <select onchange="memberFilters.role=this.value;render()">
+        <option value="">Compite y apoyo</option>
+        <option value="competing" ${memberFilters.role==='competing'?'selected':''}>Solo compite</option>
+        <option value="support" ${memberFilters.role==='support'?'selected':''}>Solo apoyo</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="openMemberModal()">${ICONS.plus} Agregar integrante</button>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Integrante</th><th>Ciudad</th><th>Teléfono</th><th>Rol</th><th>Estado</th><th>Llegada</th><th>Hora</th><th>Transporte</th><th>Observaciones</th><th></th></tr></thead>
+    <tbody>
+    ${list.map(m=>`<tr>
+      <td><div class="name-cell"><div class="avatar" style="background:${colorFor(m.id)}">${initials(m.name)}</div>${m.name}</div></td>
+      <td>${m.city}</td><td class="mono">${m.phone||'—'}</td>
+      <td>${rolePill(m)}</td>
+      <td>${statusPill(m.status)}</td>
+      <td>${dayLabel(m.arrivalDate)}</td>
+      <td class="mono">${m.arrivalTime||'—'}</td>
+      <td>${m.transport||'—'}</td>
+      <td style="max-width:160px;white-space:normal;color:var(--text-dim);font-size:12px">${m.notes||'—'}</td>
+      <td><div class="icon-btn" style="width:28px;height:28px" onclick="openMemberModal('${m.id}')">${ICONS.edit}</div></td>
+    </tr>`).join('') || `<tr><td colspan="10" class="empty-hint">Ningún integrante coincide con los filtros.</td></tr>`}
+    </tbody>
+  </table></div>`;
+}
+function openMemberModal(id){
+  const m = id ? state.members.find(x=>x.id===id) : {id:null,name:'',city:'',phone:'',status:'pending',competing:true,arrivalDate:'',arrivalTime:'',transport:'',notes:'',bikeTakes:false,bikeExtra:0,bikeFrom:'',bikeTime:'',volunteering:[]};
+  const root=document.getElementById('modalRoot');
+  root.innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <h3>${id?'Editar integrante':'Nuevo integrante'}</h3>
+    <div class="field"><label>Nombre completo</label><input type="text" id="f_name" value="${m.name}"></div>
+    <div class="row2">
+      <div class="field"><label>Ciudad de origen</label><input type="text" id="f_city" value="${m.city}"></div>
+      <div class="field"><label>Teléfono</label><input type="tel" id="f_phone" value="${m.phone}"></div>
+    </div>
+    <div class="field"><label>Estado de confirmación</label>
+      <select id="f_status">
+        <option value="pending" ${m.status==='pending'?'selected':''}>Pendiente</option>
+        <option value="confirmed" ${m.status==='confirmed'?'selected':''}>Confirmado</option>
+        <option value="declined" ${m.status==='declined'?'selected':''}>No asistirá</option>
+      </select>
+    </div>
+    <div class="toggle-row">
+      <div>
+        <div style="font-size:13px;font-weight:600">¿Participará en la competencia?</div>
+        <div style="font-size:11.5px;color:var(--text-dim)">Desactiva si irá solo de apoyo logístico</div>
+      </div>
+      <div class="switch ${m.competing!==false?'on':''}" id="f_competing_switch" onclick="this.classList.toggle('on')"><div class="knob"></div></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Día de llegada</label><select id="f_day"><option value="">—</option><option value="fri" ${m.arrivalDate==='fri'?'selected':''}>Viernes</option><option value="sat" ${m.arrivalDate==='sat'?'selected':''}>Sábado</option><option value="sun" ${m.arrivalDate==='sun'?'selected':''}>Domingo</option></select></div>
+      <div class="field"><label>Hora aproximada</label><input type="text" id="f_time" placeholder="17:00" value="${m.arrivalTime}"></div>
+    </div>
+    <div class="field"><label>Medio de transporte</label><input type="text" id="f_transport" value="${m.transport}"></div>
+    <div class="field"><label>Observaciones</label><textarea id="f_notes" rows="2">${m.notes}</textarea></div>
+    <div class="modal-actions">
+      ${id?`<button class="btn btn-ghost" style="color:#DC2626" onclick="deleteMember('${id}')">${ICONS.trash} Eliminar</button>`:''}
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveMember('${id||''}')">${ICONS.check} Guardar</button>
+    </div>
+  </div></div>`;
+}
+function saveMember(id){
+  const competing = document.getElementById('f_competing_switch').classList.contains('on');
+  const data={name:val('f_name'),city:val('f_city'),phone:val('f_phone'),status:val('f_status'),competing,arrivalDate:val('f_day'),arrivalTime:val('f_time'),transport:val('f_transport'),notes:val('f_notes')};
+  if(!data.name.trim()){alert('El nombre es obligatorio.');return;}
+  if(id){ Object.assign(state.members.find(x=>x.id===id), data); }
+  else{ state.members.push({id:uid(),bikeTakes:false,bikeExtra:0,bikeFrom:'',bikeTime:'',volunteering:[],...data}); }
+  saveState(); closeModal(); render();
+}
+function deleteMember(id){ state.members=state.members.filter(x=>x.id!==id); saveState(); closeModal(); render(); }
+function val(id){return document.getElementById(id).value;}
+function closeModal(){document.getElementById('modalRoot').innerHTML='';}
+
+/* ---------- BIKE TRANSPORT ---------- */
+function renderBike(){
+  const providers = state.members.filter(x=>x.bikeTakes && x.bikeExtra>0);
+  const totalCapacity = providers.reduce((a,x)=>a+(parseInt(x.bikeExtra)||0),0);
+  const takers = state.members.filter(x=>x.bikeTakes).length;
+  return `
+  <div class="grid g3" style="margin-bottom:20px">
+    <div class="card stat-card"><div class="icon-wrap blue-tint">${ICONS.bike}</div><div class="stat-val mono">${takers}</div><div class="stat-lbl">Llevan su propia bicicleta</div></div>
+    <div class="card stat-card"><div class="icon-wrap run-tint">${ICONS.bike}</div><div class="stat-val mono">${totalCapacity}</div><div class="stat-lbl">Capacidad adicional disponible</div></div>
+    <div class="card stat-card"><div class="icon-wrap orange-tint">${ICONS.members}</div><div class="stat-val mono">${providers.length}</div><div class="stat-lbl">Personas ofreciendo espacio</div></div>
+  </div>
+  <div class="section-title"><h3>Detalle por integrante</h3><span class="hint">Marca si lleva su bici y si tiene espacio para más</span></div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn btn-primary btn-sm" onclick="openMemberModal()">${ICONS.plus} Agregar integrante</button></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Integrante</th><th>Lleva su bici</th><th>Espacio adicional</th><th>Sale desde</th><th>Hora de salida</th></tr></thead>
+    <tbody>
+    ${state.members.filter(m=>m.status!=='declined').map(m=>`<tr>
+      <td><div class="name-cell"><div class="avatar" style="background:${colorFor(m.id)}">${initials(m.name)}</div>${m.name}</div></td>
+      <td><div class="switch ${m.bikeTakes?'on':''}" onclick="toggleBike('${m.id}')"><div class="knob"></div></div></td>
+      <td>${m.bikeTakes?`<input type="number" min="0" style="width:70px" value="${m.bikeExtra||0}" onchange="setBikeField('${m.id}','bikeExtra',this.value)">`:'<span style="color:var(--text-dim)">—</span>'}</td>
+      <td>${m.bikeTakes?`<input type="text" style="width:120px" value="${m.bikeFrom||''}" onchange="setBikeField('${m.id}','bikeFrom',this.value)">`:'—'}</td>
+      <td>${m.bikeTakes?`<input type="text" style="width:90px" value="${m.bikeTime||''}" placeholder="09:00" onchange="setBikeField('${m.id}','bikeTime',this.value)">`:'—'}</td>
+    </tr>`).join('')}
+    </tbody>
+  </table></div>
+  <div class="section-title"><h3>Resumen de capacidad</h3></div>
+  <div class="card">
+    ${providers.length? providers.map(p=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span><b>${p.name}</b> — desde ${p.bikeFrom||'ciudad no indicada'} ${p.bikeTime?('· sale '+p.bikeTime):''}</span><span class="mono pill pill-green">+${p.bikeExtra}</span></div>`).join('')
+    : `<div class="empty-hint">Nadie ha ofrecido espacio adicional todavía.</div>`}
+    <div style="display:flex;justify-content:space-between;padding-top:12px;font-weight:700"><span>Capacidad adicional total</span><span class="mono" style="color:var(--run-600)">${totalCapacity} bicicletas</span></div>
+  </div>`;
+}
+function toggleBike(id){ const m=state.members.find(x=>x.id===id); m.bikeTakes=!m.bikeTakes; saveState(); render(); }
+function setBikeField(id,field,value){ const m=state.members.find(x=>x.id===id); m[field]= field==='bikeExtra'? (parseInt(value)||0): value; saveState(); render(); }
+
+/* ---------- INVENTORY ---------- */
+function renderInv(){
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <span class="hint" style="color:var(--text-dim);font-size:12.5px">🟢 Completo &nbsp;·&nbsp; 🟡 Parcial &nbsp;·&nbsp; 🔴 Falta cubrir</span>
+    <button class="btn btn-primary btn-sm" onclick="addInvItem()">${ICONS.plus} Agregar implemento</button>
+  </div>
+  <div class="card">
+    <div class="inv-item inv-head"><div>Implemento</div><div>Necesario</div><div>Cubierto</div><div>Quién lo lleva</div><div>Estado</div><div></div></div>
+    ${state.inventory.map(i=>{
+      const pct = i.needed? i.covered/i.needed:1;
+      const dot = pct>=1?'dot-green':pct>0?'dot-amber':'dot-red';
+      const stateTxt = pct>=1?'Completo':pct>0?'Parcial':'Falta';
+      return `<div class="inv-item">
+        <div class="inv-name">${i.name}</div>
+        <div><input type="number" min="0" value="${i.needed}" onchange="setInv('${i.id}','needed',this.value)"></div>
+        <div><input type="number" min="0" value="${i.covered}" onchange="setInv('${i.id}','covered',this.value)"></div>
+        <div><input type="text" placeholder="—" value="${i.coveredBy||''}" onchange="setInv('${i.id}','coveredBy',this.value)"></div>
+        <div style="display:flex;align-items:center;gap:6px"><span class="dot ${dot}"></span><span style="font-size:12px">${stateTxt}</span></div>
+        <div class="icon-btn" style="width:26px;height:26px" onclick="delInv('${i.id}')">${ICONS.trash}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function setInv(id,field,value){ const i=state.inventory.find(x=>x.id===id); i[field]= (field==='needed'||field==='covered')? (parseInt(value)||0): value; saveState(); render(); }
+function delInv(id){ state.inventory=state.inventory.filter(x=>x.id!==id); saveState(); render(); }
+function addInvItem(){
+  const name=prompt('Nombre del implemento:'); if(!name) return;
+  const needed=parseInt(prompt('Cantidad necesaria:','1'))||1;
+  state.inventory.push({id:uid(),name,needed,covered:0,coveredBy:'',custom:true});
+  saveState(); render();
+}
+
+/* ---------- VOLUNTEERS ---------- */
+function renderVol(){
+  return `
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px">
+    <button class="btn btn-ghost btn-sm" onclick="openMemberModal()">${ICONS.plus} Agregar integrante</button>
+    <button class="btn btn-primary btn-sm" onclick="addTask()">${ICONS.plus} Nueva tarea</button>
+  </div>
+  ${state.volunteerTasks.map(t=>{
+    const eligible = state.members.filter(m=>m.status!=='declined');
+    const assigned = eligible.filter(m=>m.volunteering.includes(t.name));
+    const available = eligible.filter(m=>!m.volunteering.includes(t.name));
+    return `<div class="vol-task" style="align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13.5px;margin-bottom:9px">${t.name}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          ${assigned.map(m=>`<div class="chip on" style="padding-right:6px">
+              <div class="avatar" style="width:18px;height:18px;font-size:9px;background:${colorFor(m.id)}">${initials(m.name)}</div>
+              <span>${m.name}</span>
+              <span onclick="event.stopPropagation();toggleVolunteer('${m.id}','${t.name.replace(/'/g,"\\'")}')" style="margin-left:2px;cursor:pointer;font-weight:700;line-height:1">×</span>
+            </div>`).join('') || '<span style="font-size:12px;color:var(--text-dim)">Nadie asignado todavía.</span>'}
+          ${available.length? `<select style="width:auto;min-width:150px;font-size:12px" onchange="if(this.value){toggleVolunteer(this.value,'${t.name.replace(/'/g,"\\'")}');this.value=''}">
+              <option value="">+ Agregar persona…</option>
+              ${available.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}
+            </select>` : ''}
+        </div>
+      </div>
+      <div style="text-align:right;margin-left:16px;flex-shrink:0"><div class="cnt" style="color:${assigned.length===0?'#DC2626':'var(--run-600)'}">${assigned.length}</div><div style="font-size:11px;color:var(--text-dim)">voluntarios</div></div>
+    </div>`;
+  }).join('')}`;
+}
+function toggleVolunteer(memberId, taskName){
+  const m = state.members.find(x=>x.id===memberId);
+  const i = m.volunteering.indexOf(taskName);
+  if(i>=0) m.volunteering.splice(i,1); else m.volunteering.push(taskName);
+  saveState(); render();
+}
+function addTask(){
+  const name=prompt('Nombre de la nueva tarea de voluntariado:'); if(!name) return;
+  state.volunteerTasks.push({id:uid(),name}); saveState(); render();
+}
+
+/* ---------- SCHEDULE ---------- */
+function renderSched(){
+  function day(d,label){
+    const items = state.schedule.filter(x=>x.day===d).sort((a,b)=>a.time.localeCompare(b.time));
+    return `<div class="tl-day"><h4>${label}</h4>${items.map(x=>`<div class="tl-row"><div class="tl-time">${x.time}</div><div style="flex:1"><div class="tl-label">${x.label}</div></div><div class="icon-btn" style="width:26px;height:26px" onclick="delSched('${x.id}')">${ICONS.trash}</div></div>`).join('') || '<div class="empty-hint">Sin actividades.</div>'}</div>`;
+  }
+  return `
+  <div class="card" style="margin-bottom:20px">
+    <div class="row2">
+      <div class="field"><label>Día</label><select id="s_day"><option value="fri">Viernes</option><option value="sat">Sábado</option><option value="sun">Domingo</option></select></div>
+      <div class="field"><label>Hora</label><input type="text" id="s_time" placeholder="17:00"></div>
+    </div>
+    <div class="field"><label>Actividad</label><input type="text" id="s_label" placeholder="Ej: Reunión técnica"></div>
+    <button class="btn btn-primary btn-sm" onclick="addSched()">${ICONS.plus} Agregar al cronograma</button>
+  </div>
+  ${day('fri','Viernes — entrega de kits')}
+  ${day('sat','Sábado')}
+  ${day('sun','Domingo — día de la competencia')}
+  `;
+}
+function addSched(){
+  const day=val('s_day'), time=val('s_time'), label=val('s_label');
+  if(!time||!label){alert('Completa hora y actividad.');return;}
+  state.schedule.push({id:uid(),day,time,label});
+  saveState(); render();
+}
+function delSched(id){ state.schedule=state.schedule.filter(x=>x.id!==id); saveState(); render(); }
+
+/* ---------- CHECKLIST ---------- */
+function renderChk(){
+  const done=state.checklist.filter(x=>x.done).length;
+  const pct = state.checklist.length? Math.round(done/state.checklist.length*100):0;
+  return `
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;font-weight:700"><span>Progreso general</span><span class="mono">${pct}%</span></div>
+    <div class="progress-bar"><div style="width:${pct}%"></div></div>
+  </div>
+  <div class="card">
+    ${state.checklist.map(t=>`<div class="chk-row ${t.done?'done':''}">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleChk('${t.id}')">
+      <span class="txt" style="flex:1">${t.text}</span>
+      <div class="icon-btn" style="width:26px;height:26px" onclick="delChk('${t.id}')">${ICONS.trash}</div>
+    </div>`).join('')}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <input type="text" id="chkNew" placeholder="Nueva tarea…" onkeydown="if(event.key==='Enter')addChk()">
+      <button class="btn btn-primary btn-sm" onclick="addChk()">${ICONS.plus}</button>
+    </div>
+  </div>`;
+}
+function toggleChk(id){ const t=state.checklist.find(x=>x.id===id); t.done=!t.done; saveState(); render(); }
+function delChk(id){ state.checklist=state.checklist.filter(x=>x.id!==id); saveState(); render(); }
+function addChk(){ const v=val('chkNew'); if(!v.trim())return; state.checklist.push({id:uid(),text:v,done:false}); saveState(); render(); }
+
+/* ---------- CHAT ---------- */
+function renderChat(){
+  return `<div class="card">
+    <div class="chat-box" id="chatBox">
+      ${state.chat.map(m=>`<div class="msg" style="max-width:100%;justify-content:space-between;align-items:flex-start"><div style="display:flex;gap:9px;max-width:78%"><div class="avatar" style="background:${colorFor(m.author)}">${initials(m.author)}</div>
+        <div><div class="who">${m.author}</div><div class="bubble">${m.text}</div><div class="time">${m.time}</div></div></div>
+        <div class="icon-btn" style="width:26px;height:26px;flex-shrink:0" onclick="delChat('${m.id}')">${ICONS.trash}</div></div>`).join('') || '<div class="empty-hint">Aún no hay mensajes.</div>'}
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chatMsg" placeholder="Escribe un mensaje al equipo…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn btn-primary" onclick="sendChat()">${ICONS.send}</button>
+    </div>
+  </div>`;
+}
+function sendChat(){
+  const v=val('chatMsg'); if(!v.trim())return;
+  state.chat.push({id:uid(),author:currentUser,text:v,time:'Ahora'});
+  document.getElementById('chatMsg').value='';
+  saveState(); render();
+}
+function delChat(id){ state.chat=state.chat.filter(x=>x.id!==id); saveState(); render(); }
+
+/* ---------- CALENDAR ---------- */
+function renderCal(){
+  const days=['L','M','X','J','V','S','D'];
+  const dayFull={fri:'V',sat:'S',sun:'D'};
+  return `<div class="card">
+    <div class="cal-grid">
+      ${days.map(d=>`<div style="text-align:center;font-size:11px;font-weight:700;color:var(--text-dim)">${d}</div>`).join('')}
+      ${Array(3).fill(0).map(()=>`<div class="cal-cell"></div>`).join('')}
+      ${['fri','sat','sun'].map(d=>{
+        const evts=state.schedule.filter(x=>x.day===d).sort((a,b)=>a.time.localeCompare(b.time));
+        const lbl=d==='fri'?'Viernes':d==='sat'?'Sábado':'Domingo';
+        return `<div class="cal-cell active"><div class="d">${lbl}</div>${evts.map(e=>`<div class="cal-evt">${e.time} ${e.label}</div>`).join('')}</div>`;
+      }).join('')}
+      <div class="cal-cell"></div>
+    </div>
+  </div>
+  <div class="section-title"><h3>Llegadas programadas</h3></div>
+  <div class="grid g3">
+    <div class="card"><div style="font-weight:700;margin-bottom:8px">Viernes</div>${state.members.filter(m=>m.arrivalDate==='fri'&&m.status==='confirmed').map(m=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${m.name}</span><span class="mono" style="color:var(--text-dim)">${m.arrivalTime||'—'}</span></div>`).join('') || '<div class="empty-hint">Nadie confirmado aún.</div>'}</div>
+    <div class="card"><div style="font-weight:700;margin-bottom:8px">Sábado</div>${state.members.filter(m=>m.arrivalDate==='sat'&&m.status==='confirmed').map(m=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${m.name}</span><span class="mono" style="color:var(--text-dim)">${m.arrivalTime||'—'}</span></div>`).join('') || '<div class="empty-hint">Nadie confirmado aún.</div>'}</div>
+    <div class="card"><div style="font-weight:700;margin-bottom:8px">Domingo</div>${state.members.filter(m=>m.arrivalDate==='sun'&&m.status==='confirmed').map(m=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${m.name}</span><span class="mono" style="color:var(--text-dim)">${m.arrivalTime||'—'}</span></div>`).join('') || '<div class="empty-hint">Nadie confirmado aún.</div>'}</div>
+  </div>`;
+}
+
+/* ---------- ADMIN ---------- */
+function renderAdmin(){
+  return `
+  <div class="grid g2" style="margin-bottom:20px">
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">Datos de la competencia</h3>
+      <div class="field"><label>Fecha de la competencia</label><input type="text" id="raceDateInput" value="${state.raceDate}" placeholder="AAAA-MM-DD" onchange="setRaceDate(this.value)"></div>
+      <div class="field"><label>Tu nombre (para comentarios)</label><input type="text" value="${currentUser}" onchange="currentUser=this.value"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">Acciones rápidas</h3>
+      <button class="btn btn-ghost" style="width:100%;justify-content:flex-start;margin-bottom:8px" onclick="setTab('members');openMemberModal()">${ICONS.plus} Agregar integrante</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:flex-start;margin-bottom:8px" onclick="setTab('inv');addInvItem()">${ICONS.plus} Agregar implemento</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:flex-start" onclick="setTab('vol');addTask()">${ICONS.plus} Crear tarea de voluntariado</button>
+    </div>
+  </div>
+  <div class="section-title"><h3>Alertas activas</h3><span class="hint">Se actualizan automáticamente</span></div>
+  ${alertsHTML()}
+  <div class="section-title"><h3>Estado por integrante</h3></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Integrante</th><th>Estado</th><th>Editar</th><th>Eliminar</th></tr></thead>
+    <tbody>${state.members.map(m=>`<tr>
+      <td><div class="name-cell"><div class="avatar" style="background:${colorFor(m.id)}">${initials(m.name)}</div>${m.name}</div></td>
+      <td>${m.status==='confirmed'?'<span class="pill pill-green">Confirmado</span>':m.status==='pending'?'<span class="pill pill-amber">Pendiente</span>':'<span class="pill pill-red">No asiste</span>'}</td>
+      <td><div class="icon-btn" style="width:28px;height:28px" onclick="openMemberModal('${m.id}')">${ICONS.edit}</div></td>
+      <td><div class="icon-btn" style="width:28px;height:28px" onclick="deleteMember('${m.id}')">${ICONS.trash}</div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+function setRaceDate(v){ state.raceDate=v; saveState(); render(); }
+
+/* ---------- INIT ---------- */
+loadState();
+setInterval(updateCountdown, 60000);
+</script>
+</body>
+</html>
